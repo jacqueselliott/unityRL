@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CollisionDetect.cs" />
     <Compile Include="Assets\Scripts\ColourChanger.cs" />
+    <Compile Include="Assets\Scripts\DataTrack.cs" />
     <Compile Include="Assets\Scripts\InstantiateGoal.cs" />
     <Compile Include="Assets\Scripts\Movement.cs" />
   </ItemGroup>
