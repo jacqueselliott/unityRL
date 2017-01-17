@@ -18,6 +18,7 @@ public class Movement : MonoBehaviour {
         float delta = Time.deltaTime;
         Vector3 direction = new Vector3(inx, 0, inz)*delta*forceMagnitude;
         droneRigidbody.AddForce(direction);
+        transform.position = new Vector3(transform.position.x, 0.5f, transform.position.z);
         transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
 	}
 }
