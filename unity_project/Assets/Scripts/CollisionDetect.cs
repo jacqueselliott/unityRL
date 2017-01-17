@@ -9,7 +9,7 @@ public class CollisionDetect : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        controller = GameObject.FindGameObjectWithTag("controller");
+        controller = GameObject.FindGameObjectWithTag("Controller");
         dataScript = controller.GetComponent<DataTrack>();
 	}
 	
