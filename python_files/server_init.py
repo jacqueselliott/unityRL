@@ -1,5 +1,5 @@
 from websocket_server import WebsocketServer
-import sys
+
 #https://github.com/Pithikos/python-websocket-server/blob/master/websocket_server/websocket_server.py
 PORT=9001
 server = WebsocketServer(PORT)
