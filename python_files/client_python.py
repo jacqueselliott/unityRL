@@ -22,7 +22,11 @@ def on_close(ws):
 
 def on_open(ws):
     send_message('client')
-    
+    while True:
+        print('Type hello to start')
+        cur = raw_input()
+        if cur == 'hello':
+            break
     send_message(str(-1))
 
 def send_message(msg):
