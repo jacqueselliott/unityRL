@@ -3,9 +3,14 @@ using System.Collections;
 
 public class CollisionDetect : MonoBehaviour {
 
+    private GameObject controller;
+
+    private DataTrack dataScript;
+
 	// Use this for initialization
 	void Start () {
-	    
+        controller = GameObject.FindGameObjectWithTag("controller");
+        dataScript = controller.GetComponent<DataTrack>();
 	}
 	
 	// Update is called once per frame
@@ -17,6 +22,7 @@ public class CollisionDetect : MonoBehaviour {
         if(other.gameObject.tag == "Drone")
         {
             Destroy(gameObject);
+            dataScript.success = 1;
         }
     }
 }

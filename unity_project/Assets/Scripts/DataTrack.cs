@@ -17,7 +17,11 @@ public class DataTrack : MonoBehaviour {
     private Vector3 dir2;
     private Vector3 dir3;
 
+    public int success = 0;
+
     private Movement droneMovement;
+
+    private InstantiateGoal instantiateGoal;
 
     // Use this for initialization
     void Start () {
@@ -25,21 +29,29 @@ public class DataTrack : MonoBehaviour {
         dir1 = new Vector3(0f, 0f, 1f);
         dir2 = new Vector3(0f, 0f, -1f);
         dir3 = new Vector3(-1f, 0f, 0f);
+        instantiateGoal = gameObject.GetComponent<InstantiateGoal>();
         drone = GameObject.FindGameObjectWithTag("Drone");
         droneMovement = drone.GetComponent<Movement>();
         droneRigidbody = drone.GetComponent<Rigidbody>();
         goal = null;
 		ws_cur = new WebSocket ("ws://localhost:9001");
 		ws_cur.OnMessage += (sender, e) => {
-			if (e.IsText) {
+            if (e.IsText)
+            {
                 if (!droneMovement.netControlled)
                 {
                     droneMovement.netControlled = true;
                 }
-				Debug.Log(e.Data.ToString());
-				//Handles received action
-				int action = int.Parse(e.Data.ToString());
-                if (action == 0) { droneMovement.direction = dir0; }
+                Debug.Log(e.Data.ToString());
+                //Handles received action
+                int action = int.Parse(e.Data.ToString());
+                if (action == -1) {
+                    if (goal != null)
+                    {
+                        Destroy(goal);
+                    }
+                }
+                else if (action == 0) { droneMovement.direction = dir0; }
                 else if (action == 1) { droneMovement.direction = dir1; }
                 else if (action == 2) { droneMovement.direction = dir2; }
                 else if (action == 3) { droneMovement.direction = dir3; }
@@ -65,14 +77,19 @@ public class DataTrack : MonoBehaviour {
 			droneCoords = drone.transform.position;
 			droneVelocity = droneRigidbody.velocity;
 			ws_cur.Send (buildOutput());
+            if (success == 1)
+            {
+                success = 0;
+            }
 		}
 	}
 
 	string buildOutput() {
-		string coord = round_dp (droneCoords.x).ToString () + ':' + round_dp (droneCoords.z).ToString () +':';
-		string veloc = round_dp (droneVelocity.x).ToString () + ':' + round_dp (droneVelocity.z).ToString () +':';
+		string coord = round_dp (droneCoords.x).ToString () + ':' + round_dp (droneCoords.z).ToString ();
+		string veloc = round_dp (droneVelocity.x).ToString () + ':' + round_dp (droneVelocity.z).ToString ();
 		string goal = round_dp (goalCoords.x).ToString () + ':' + round_dp (goalCoords.z).ToString ();
-		return coord + veloc + goal;
+        string succ = success.ToString();
+		return coord + ':' + veloc + ':' + goal + ':' + succ;
 	}
 
 	float round_dp(float input){
