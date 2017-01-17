@@ -21,6 +21,8 @@ public class DataTrack : MonoBehaviour {
 		ws_cur.OnMessage += (sender, e) => {
 			if (e.IsText) {
 				Debug.Log(e.ToString());
+				//Handles received action
+				int action = int.Parse(e.ToString());
 			}
 		};
 		ws_cur.Connect ();
@@ -36,18 +38,23 @@ public class DataTrack : MonoBehaviour {
         {
             goal = gameObject.transform.GetChild(0).gameObject;
         }
-        if (goal == null)
-        {
-            goalCoords = new Vector3(0f, -1000f, 0f);
-        } else
-        {
-            goalCoords = goal.transform.position;
-        }
-        droneCoords = drone.transform.position;
-        droneVelocity = droneRigidbody.velocity;
-		ws_cur.Send(droneVelocity.ToString());
-        Debug.Log(droneCoords);
-        Debug.Log(droneVelocity);
-        Debug.Log(goalCoords);
+		if (goal != null) {
+  
+			goalCoords = goal.transform.position;
+			droneCoords = drone.transform.position;
+			droneVelocity = droneRigidbody.velocity;
+			ws_cur.Send (buildOutput());
+		}
+	}
+
+	string buildOutput() {
+		string coord = round_dp (droneCoords.x).ToString () + ':' + round_dp (droneCoords.z).ToString () +':';
+		string veloc = round_dp (droneVelocity.x).ToString () + ':' + round_dp (droneVelocity.z).ToString () +':';
+		string goal = round_dp (goalCoords.x).ToString () + ':' + round_dp (goalCoords.z).ToString ();
+		return coord + veloc + goal;
+	}
+
+	float round_dp(float input){
+		return Mathf.Round (input * 10f) / 10f;
 	}
 }

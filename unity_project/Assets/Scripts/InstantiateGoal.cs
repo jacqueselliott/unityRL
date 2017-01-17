@@ -23,9 +23,15 @@ public class InstantiateGoal : MonoBehaviour {
 
     void CreateGoal()
     {
-        float randx = Random.Range(planeSize-1f, planeSize-1f);
-        float randz = Random.Range(planeSize-1f, planeSize-1f);
+        float randx = Random.Range(-planeSize+1f, planeSize-1f);
+        float randz = Random.Range(-planeSize+1f, planeSize-1f);
         Vector3 spawnLocation = new Vector3(randx, 1f, randz);
+		while(Vector3.Distance(spawnLocation, drone.transform.position)<4f)
+		{
+			randx = Random.Range(-planeSize+1f, planeSize-1f);
+			randz = Random.Range(-planeSize+1f, planeSize-1f);
+			spawnLocation = new Vector3(randx, 1f, randz);
+		}
         GameObject goalClone = (GameObject)Instantiate(goal, spawnLocation, Quaternion.identity);
         goalClone.transform.SetParent(gameObject.transform);
     }
