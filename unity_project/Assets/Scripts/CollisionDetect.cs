@@ -7,6 +7,8 @@ public class CollisionDetect : MonoBehaviour {
 
     private DataTrack dataScript;
 
+	public bool dest = false;
+
 	// Use this for initialization
 	void Start () {
         controller = GameObject.FindGameObjectWithTag("Controller");
@@ -15,7 +17,10 @@ public class CollisionDetect : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    
+		if (dest) {
+			Destroy (gameObject);
+			dest = false;
+		}
 	}
     void OnCollisionEnter(Collision other)
     {

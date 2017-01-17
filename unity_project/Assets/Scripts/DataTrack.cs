@@ -23,6 +23,8 @@ public class DataTrack : MonoBehaviour {
 
     private InstantiateGoal instantiateGoal;
 
+	private CollisionDetect colDet;
+
     // Use this for initialization
     void Start () {
         dir0 = new Vector3(1f, 0f, 0f);
@@ -48,7 +50,7 @@ public class DataTrack : MonoBehaviour {
                 if (action == -1) {
                     if (goal != null)
                     {
-                        Destroy(goal);
+						colDet.dest = true;
                     }
                 }
                 else if (action == 0) { droneMovement.direction = dir0; }
@@ -66,10 +68,12 @@ public class DataTrack : MonoBehaviour {
         if (gameObject.transform.childCount < 1)
         {
             goal = null;
+			colDet = null;
         }
         if (gameObject.transform.childCount == 1 && goal == null)
         {
             goal = gameObject.transform.GetChild(0).gameObject;
+			colDet = goal.GetComponent<CollisionDetect> ();
         }
 		if (goal != null) {
   

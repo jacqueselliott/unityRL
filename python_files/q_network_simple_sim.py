@@ -145,7 +145,7 @@ def main():
         for i in range(num_episodes):
             episodeBuffer = experience_buffer()
             # Reset environment and get first new observation
-            s = env.reset() # TODO - here, send a reset signal to the simulation
+            s = reset() #here, send a reset signal to the simulation
             d = False # TODO check how to use this?
             rAll = 0
             j = 0
@@ -157,7 +157,7 @@ def main():
                     a = np.random.randint(0,4)
                 else:
                     a = sess.run(mainQN.predict,feed_dict={mainQN.scalarInput:[s]})[0]
-                s1,r,d = env.step(a) #TODO here, send a message through Imran's server to the simulation
+                s1,r,d = step_simulation(a) # here, send a message through Imran's server to the simulation
                 total_steps += 1
                 episodeBuffer.add(np.reshape(np.array([s,a,r,s1,d]),[1,5])) #Save the experience to our episode buffer.
                 # TODO ABOVE - make sure you ensure that the reshape idea works correctly
@@ -204,11 +204,25 @@ def main():
         saver.save(sess,path+'/model-'+str(i)+'.cptk')
     print "Percent of succesful episodes: " + str(sum(rList)/num_episodes) + "%"
 
-    def step_simulation(action):
-        client_python.send_message(action)
-        client_python.data_received = False
-        while not client_python.data_received:
-            pass
-        cur_state = client_python.data_message
-        client_python.data_received = False
+def step_simulation(action):
+    client_python.send_message(action)
+    client_python.data_received = False
+    while not client_python.data_received:
+        pass
+    cur_state = client_python.data_message
+    client_python.data_received = False
+    return unpack_messages(cur_state)
 
+def unpack_messages(msg):
+    arr = msg.split(":")
+    s = arr[:6]
+    collison = arr[-1]
+    done = False
+    reward = -1
+    if collison == 1:
+        done = True
+        reward = 100
+    return s, done, reward
+
+def reset():
+    client_python.send_message(str(-1))

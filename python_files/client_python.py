@@ -10,7 +10,8 @@ data_received = False
 data_message = ""
 
 def on_message(ws, message):
-    if data_received == False
+    global data_received, data_message
+    if data_received == False:
         data_message = message
         data_received = True
 
