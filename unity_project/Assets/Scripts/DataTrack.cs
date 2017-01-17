@@ -26,6 +26,7 @@ public class DataTrack : MonoBehaviour {
 			}
 		};
 		ws_cur.Connect ();
+		ws_cur.Send ("unity");
 	}
 	
 	// Update is called once per frame
