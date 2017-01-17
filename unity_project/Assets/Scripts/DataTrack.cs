@@ -20,9 +20,9 @@ public class DataTrack : MonoBehaviour {
 		ws_cur = new WebSocket ("ws://localhost:9001");
 		ws_cur.OnMessage += (sender, e) => {
 			if (e.IsText) {
-				Debug.Log(e.ToString());
+				Debug.Log(e.Data.ToString());
 				//Handles received action
-				int action = int.Parse(e.ToString());
+				int action = int.Parse(e.Data.ToString());
 			}
 		};
 		ws_cur.Connect ();

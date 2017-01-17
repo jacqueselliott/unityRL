@@ -1,30 +1,47 @@
 from websocket_server import WebsocketServer
 import sys
 #https://github.com/Pithikos/python-websocket-server/blob/master/websocket_server/websocket_server.py
+PORT=9001
+server = WebsocketServer(PORT)
+simul_id = {}
+deep_id = {}
 
-simul_id = 0
-deep_id = 0
 # Called for every client connecting (after handshake)
 def proc_new_client(client, server):
-	print("New client connected and was given id %d" % client['id'])
+	pass
 
 
 # Called for every client disconnecting
 def proc_client_left(client, server):
-	print("Client(%d) disconnected" % client['id'])
-
+	global simul_id, deep_id
+	if 'id' in simul_id:
+		if simul_id['id'] == client['id']:
+			simul_id = {}
+	if 'id' in deep_id:
+		if deep_id['id'] == client['id']:
+			deep_id = {}
 
 # Called when a client sends a message
 def proc_message_received(client, server, message):
-	if len(message) > 200:
-		message = message[:200]+'..'
-	print("Client(%d) said: %s" % (client['id'], message))
-
-
-PORT=9001
-server = WebsocketServer(PORT)
+	global simul_id, deep_id
+	if message == 'client':
+		deep_id = client
+		print('Client connected!')
+	elif message == 'unity':
+		simul_id = client
+		print('Unity agent connected!')
+	else:
+		#Parse message id
+		if 'id' in simul_id and 'id' in deep_id:
+			if client['id'] == simul_id['id']:
+				#Send to client
+				server.send_message(deep_id, message)
+			elif client['id'] == deep_id['id']:
+				#Send to simulation
+				server.send_message(simul_id, message)
 
 def start_server():
+	global simul_id, deep_id
 	server.set_fn_new_client(proc_new_client)
 	server.set_fn_client_left(proc_client_left)
 	server.set_fn_message_received(proc_message_received)
