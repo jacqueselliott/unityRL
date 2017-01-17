@@ -1,3 +1,5 @@
+import client_python
+
 class Qnetwork():
     def __init__(self,h_size):
 
@@ -201,3 +203,12 @@ def main():
                 print total_steps,np.mean(rList[-10:]), e
         saver.save(sess,path+'/model-'+str(i)+'.cptk')
     print "Percent of succesful episodes: " + str(sum(rList)/num_episodes) + "%"
+
+    def step_simulation(action):
+        client_python.send_message(action)
+        client_python.data_received = False
+        while not client_python.data_received:
+            pass
+        cur_state = client_python.data_message
+        client_python.data_received = False
+
