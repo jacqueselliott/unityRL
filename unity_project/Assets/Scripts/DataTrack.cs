@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using WebSocketSharp;
 
 public class DataTrack : MonoBehaviour {
 
+	WebSocket ws_cur;
     GameObject drone;
     GameObject goal;
     Rigidbody droneRigidbody;
@@ -15,6 +17,13 @@ public class DataTrack : MonoBehaviour {
         drone = GameObject.FindGameObjectWithTag("Drone");
         droneRigidbody = drone.GetComponent<Rigidbody>();
         goal = null;
+		ws_cur = new WebSocket ("ws://localhost:9001");
+		ws_cur.OnMessage += (sender, e) => {
+			if (e.IsText) {
+				Debug.Log(e.ToString());
+			}
+		};
+		ws_cur.Connect ();
 	}
 	
 	// Update is called once per frame
@@ -36,6 +45,7 @@ public class DataTrack : MonoBehaviour {
         }
         droneCoords = drone.transform.position;
         droneVelocity = droneRigidbody.velocity;
+		ws_cur.Send(droneVelocity.ToString());
         Debug.Log(droneCoords);
         Debug.Log(droneVelocity);
         Debug.Log(goalCoords);
