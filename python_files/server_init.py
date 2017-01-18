@@ -26,19 +26,20 @@ def proc_message_received(client, server, message):
 	global simul_id, deep_id
 	if message == 'client':
 		deep_id = client
-		print('Client connected!')
+		print('Client connected!', client['id'])
 	elif message == 'unity':
 		simul_id = client
-		print('Unity agent connected!')
+		print('Unity agent connected!', client['id'])
 	else:
-		#Parse message id
 		if 'id' in simul_id and 'id' in deep_id:
 			if client['id'] == simul_id['id']:
 				#Send to client
-				server.send_message(deep_id, message)
+				#server.send_message(deep_id, message)
+				pass
 			elif client['id'] == deep_id['id']:
-				#Send to simulation
+				#Send to simulation)
 				server.send_message(simul_id, message)
+				#print('send to unity', message, client['id'], simul_id['id'], deep_id['id'])
 
 def start_server():
 	global simul_id, deep_id

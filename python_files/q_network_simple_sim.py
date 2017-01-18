@@ -1,8 +1,9 @@
-import client_python
+from client_python import *
 import tensorflow as tf
 import numpy as np
 import math
 import os
+import random
 
 class Qnetwork():
     def __init__(self):
@@ -199,12 +200,7 @@ def main(ws):
 
 def step_simulation(action, ws):
     action = str(action)
-    client_python.send_message(action, ws)
-    client_python.data_received = False
-    while not client_python.data_received:
-        pass
-    cur_state = client_python.data_message
-    client_python.data_received = False
+    cur_state = send_message_sync(action, ws)
     return unpack_messages(cur_state)
 
 def unpack_messages(msg):
@@ -219,4 +215,4 @@ def unpack_messages(msg):
     return s, done, reward
 
 def reset(ws):
-    step_simulation(-1, ws)
+    return step_simulation(-1, ws)
