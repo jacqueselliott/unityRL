@@ -44,7 +44,6 @@ public class DataTrack : MonoBehaviour {
                 {
                     droneMovement.netControlled = true;
                 }
-                Debug.Log(e.Data.ToString());
                 //Handles received action
                 int action = int.Parse(e.Data.ToString());
                 if (action == -1) {

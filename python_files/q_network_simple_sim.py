@@ -208,10 +208,10 @@ def unpack_messages(msg):
     s = arr[:6]
     collison = arr[-1]
     done = False
-    reward = -1
+    reward = -2
     if collison == 1:
         done = True
-        reward = 100
+        reward = 1000
     return s, done, reward
 
 def reset(ws):
