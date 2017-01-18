@@ -28,10 +28,13 @@ def on_open(ws):
         cur = raw_input()
         if cur == 'hello':
             break
-    q_network_simple_sim.main()
+    q_network_simple_sim.main(ws)
 
-def send_message(msg):
-    ws.send(msg)
+def send_message(msg, ws_in = None):
+    if ws_in is None:
+        ws.send(msg)
+    else:
+        ws_in.send(msg)
 
 ws = None
 chk_cancel = False
