@@ -52,14 +52,14 @@ class Qnetwork():
         
         #Below we obtain the loss by taking the sum of squares difference between the target and prediction Q values.
         self.targetQ = tf.placeholder(shape=[None],dtype=tf.float32)
-        self.actions = tf.placeholder(shape=[self.num_actions],dtype=tf.int32)
+        self.actions = tf.placeholder(shape=[None],dtype=tf.int32)
         self.actions_onehot = tf.one_hot(self.actions,self.num_actions,dtype=tf.float32)
         
         self.Q = tf.reduce_sum(tf.mul(self.q_output, self.actions_onehot), reduction_indices=1) # batch size x 1 vector
         
         self.td_error = tf.square(self.targetQ - self.Q)
         self.loss = tf.reduce_mean(self.td_error)
-        self.trainer = tf.train.AdamOptimizer(learning_rate=0.0001)
+        self.trainer = tf.train.AdamOptimizer(learning_rate=0.001)
         self.updateModel = self.trainer.minimize(self.loss)
 
 
@@ -96,10 +96,10 @@ def main(ws):
     y = .99 #Discount factor on the target Q-values
     startE = 1 #Starting chance of random action
     endE = 0.1 #Final chance of random action
-    annealing_steps = 10000. #How many steps of training to reduce startE to endE.
+    annealing_steps = 10000 #How many steps of training to reduce startE to endE.
     num_episodes = 10000 #How many episodes of game environment to train network with.
-    pre_train_steps = 10000 #How many steps of random actions before training begins.
-    max_epLength = 1000 #The max allowed length of our episode.
+    pre_train_steps = 1500 #How many steps of random actions before training begins.
+    max_epLength = 1500 #The max allowed length of our episode.
     load_model = False #Whether to load a saved model.
     path = "./dqn" #The path to save our model to.
     tau = 0.001 #Rate to update target network toward primary network
@@ -139,7 +139,7 @@ def main(ws):
         for i in range(num_episodes):
             episodeBuffer = experience_buffer()
             # Reset environment and get first new observation
-            s = reset(ws) #here, send a reset signal to the simulation
+            s = reset(ws)[0] #here, send a reset signal to the simulation
             d = False # TODO check how to use this?
             rAll = 0
             j = 0
@@ -152,11 +152,18 @@ def main(ws):
                 else:
                     a = sess.run(mainQN.predict,feed_dict={mainQN.state:[s]})[0]
                 s1,r,d = step_simulation(a, ws) # here, send a message through Imran's server to the simulation
+                
                 total_steps += 1
                 episodeBuffer.add(np.reshape(np.array([s,a,r,s1,d]),[1,5])) #Save the experience to our episode buffer.
                 # TODO ABOVE - make sure you ensure that the reshape idea works correctly
                 
                 if total_steps > pre_train_steps:
+                    # print "pre reshape"
+     
+                    
+                    # print "post reshape"
+                    # print (np.reshape(np.array([s,a,r,s1,d]),[1,5]))
+                    print j, rAll
                     if e > endE:
                         e -= stepDrop
                     
@@ -166,7 +173,7 @@ def main(ws):
                         actions_from_q1 = sess.run(mainQN.predict,feed_dict={mainQN.state:np.vstack(trainBatch[:,3])})
 
                         # TODO below, fix the vstack for trainbatch again
-                        Q2 = sess.run(targetQN.Qout,feed_dict={targetQN.state:np.vstack(trainBatch[:,3])})
+                        Q2 = sess.run(targetQN.q_output,feed_dict={targetQN.state:np.vstack(trainBatch[:,3])})
 
                         # todo - wtf is this even doing?
                         end_multiplier = -(trainBatch[:,4] - 1)
@@ -175,6 +182,12 @@ def main(ws):
                         double_q_value = Q2[range(batch_size),actions_from_q1]
                         targetQ = trainBatch[:,2] + (y*double_q_value * end_multiplier)
                         #Update the network with our target values.
+                        # print (np.shape(trainBatch[:,1]))
+                        try:
+                            blah = np.vstack(trainBatch[:,0])
+                        except:
+                            print (trainBatch[:,0])
+                        #print ("train batch", trainBatch)
                         _ = sess.run(mainQN.updateModel, \
                             feed_dict={mainQN.state:np.vstack(trainBatch[:,0]),mainQN.targetQ:targetQ, mainQN.actions:trainBatch[:,1]})
                         
@@ -182,8 +195,8 @@ def main(ws):
                 rAll += r
                 s = s1
                 
-                if d == True:
-                    break
+                # if d == True:
+                #     break
             
             #Get all experiences from this episode and discount their rewards.
             myBuffer.add(episodeBuffer.buffer)
@@ -203,16 +216,36 @@ def step_simulation(action, ws):
     cur_state = send_message_sync(action, ws)
     return unpack_messages(cur_state)
 
+def calc_reward(drone_pos, target_pos):
+    dist = np.linalg.norm(drone_pos-target_pos)
+    reward = 0
+    if dist > 8*math.sqrt(2):
+        reward = -5*(dist-8*math.sqrt(2))/8*math.sqrt(2) 
+    if dist < 5*math.sqrt(2):
+        reward = +5 - 5*(3*math.sqrt(2) - dist)/3*math.sqrt(2)
+    if reward > 1:
+        reward =1
+    if reward < -0.5:
+        reward = -0.5
+    return reward
+
 def unpack_messages(msg):
     arr = msg.split(":")
     s = arr[:6]
-    collison = arr[-1]
+    s = [float(i) for i in s]
+    collison = int(arr[-1])
     done = False
     reward = -2
     if collison == 1:
+        print "collision has occurred"
         done = True
         reward = 1000
-    return s, done, reward
+    else:
+        # d_pos = np.array(s[:2])
+        # t_pos = np.array(s[4:])
+        # reward = calc_reward(d_pos,t_pos)
+        reward = 0
+    return s, reward, done
 
 def reset(ws):
     return step_simulation(-1, ws)

@@ -27,10 +27,10 @@ public class DataTrack : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        dir0 = new Vector3(1f, 0f, 0f);
-        dir1 = new Vector3(0f, 0f, 1f);
-        dir2 = new Vector3(0f, 0f, -1f);
-        dir3 = new Vector3(-1f, 0f, 0f);
+        dir0 = new Vector3(1f, 0f, 0f); //right
+        dir1 = new Vector3(0f, 0f, 1f); //up
+        dir2 = new Vector3(0f, 0f, -1f); // left
+        dir3 = new Vector3(-1f, 0f, 0f); //down
         instantiateGoal = gameObject.GetComponent<InstantiateGoal>();
         drone = GameObject.FindGameObjectWithTag("Drone");
         droneMovement = drone.GetComponent<Movement>();

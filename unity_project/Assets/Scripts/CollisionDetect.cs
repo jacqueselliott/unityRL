@@ -28,6 +28,7 @@ public class CollisionDetect : MonoBehaviour {
         {
             Destroy(gameObject);
             dataScript.success = 1;
+			Debug.Log (dataScript.success);
         }
     }
 }
