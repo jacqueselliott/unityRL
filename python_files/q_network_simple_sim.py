@@ -1,4 +1,6 @@
 import client_python
+import tensorflow as tf
+import numpy as np
 
 class Qnetwork():
     def __init__(self,h_size):

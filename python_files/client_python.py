@@ -28,7 +28,7 @@ def on_open(ws):
         cur = raw_input()
         if cur == 'hello':
             break
-    send_message(str(-1))
+    q_network_simple_sim.main()
 
 def send_message(msg):
     ws.send(msg)
