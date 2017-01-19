@@ -29,8 +29,8 @@ public class DataTrack : MonoBehaviour {
     void Start () {
         dir0 = new Vector3(1f, 0f, 0f); //right
         dir1 = new Vector3(0f, 0f, 1f); //up
-        dir2 = new Vector3(0f, 0f, -1f); // left
-        dir3 = new Vector3(-1f, 0f, 0f); //down
+        dir2 = new Vector3(0f, 0f, -1f); // down
+        dir3 = new Vector3(-1f, 0f, 0f); //left
         instantiateGoal = gameObject.GetComponent<InstantiateGoal>();
         drone = GameObject.FindGameObjectWithTag("Drone");
         droneMovement = drone.GetComponent<Movement>();
@@ -56,6 +56,18 @@ public class DataTrack : MonoBehaviour {
                 else if (action == 1) { droneMovement.direction = dir1; }
                 else if (action == 2) { droneMovement.direction = dir2; }
                 else if (action == 3) { droneMovement.direction = dir3; }
+				Debug.Log("Received action, " + e.Data.ToString());
+				if (goal != null) {
+
+					goalCoords = goal.transform.position;
+					droneCoords = drone.transform.position;
+					droneVelocity = droneRigidbody.velocity;
+					ws_cur.Send (buildOutput());
+					if (success == 1)
+					{
+						success = 0;
+					}
+				}
             }
 		};
 		ws_cur.Connect ();
@@ -74,17 +86,6 @@ public class DataTrack : MonoBehaviour {
             goal = gameObject.transform.GetChild(0).gameObject;
 			colDet = goal.GetComponent<CollisionDetect> ();
         }
-		if (goal != null) {
-  
-			goalCoords = goal.transform.position;
-			droneCoords = drone.transform.position;
-			droneVelocity = droneRigidbody.velocity;
-			ws_cur.Send (buildOutput());
-            if (success == 1)
-            {
-                success = 0;
-            }
-		}
 	}
 
 	string buildOutput() {

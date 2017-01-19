@@ -10,42 +10,39 @@ class Qnetwork():
 
         self.num_actions = 4 # might CHANGE
 
-        self.input_size = 6  # will need changing with new network for more complicated task
+        self.input_size = 4  # will need changing with new network for more complicated task
 
         self.state = tf.placeholder(tf.float32, shape=[None, self.input_size],name="input_state")
 
+        self.fc_1 = tf.contrib.layers.fully_connected(self.state, 10, activation_fn=tf.nn.relu)
+        self.fc_2 = tf.contrib.layers.fully_connected(self.fc_1, 10, activation_fn=tf.nn.relu)
+        self.fc_3 = tf.contrib.layers.fully_connected(self.fc_2, 10, activation_fn=tf.nn.relu)
+        self.q_output = tf.contrib.layers.fully_connected(self.fc_3, self.num_actions, activation_fn=None)
+        # # HIDDEN LAYER ONE
+        # self.hidden_one_units = 10
+        # self.hidden_one_weights =  tf.Variable(tf.truncated_normal([self.input_size, self.hidden_one_units], 
+        #         stddev=0.1),name='hidden_one_weights')
+        # self.hidden_one_biases = tf.Variable(tf.truncated_normal([self.hidden_one_units], 
+        #         stddev=0.1),name='hidden_one_biases')
+        # self.hidden_one = tf.nn.relu(tf.matmul(self.state, self.hidden_one_weights) + self.hidden_one_biases)
 
 
-        # HIDDEN LAYER ONE
-        self.hidden_one_units = 10
+        # # HIDDEN LAYER TWO
+        # self.hidden_two_units = 10
+        # self.hidden_two_weights =  tf.Variable(tf.truncated_normal([self.hidden_one_units, self.hidden_two_units], 
+        #         stddev=0.1),name='hidden_two_weights')
 
-        self.hidden_one_weights =  tf.Variable(tf.truncated_normal([self.input_size, self.hidden_one_units], 
-                stddev=1.0 / math.sqrt(float(self.input_size))),name='hidden_one_weights')
-
-        self.hidden_one_biases = tf.Variable(tf.truncated_normal([self.hidden_one_units], 
-                stddev=1.0 / math.sqrt(float(self.input_size))),name='hidden_one_biases')
-
-        self.hidden_one = tf.nn.relu(tf.matmul(self.state, self.hidden_one_weights) + self.hidden_one_biases)
-
-
-        # HIDDEN LAYER TWO
-        self.hidden_two_units = 10
-
-        self.hidden_two_weights =  tf.Variable(tf.truncated_normal([self.hidden_one_units, self.hidden_two_units], 
-                stddev=1.0 / math.sqrt(float(self.input_size))),name='hidden_two_weights')
-
-        self.hidden_two_biases = tf.Variable(tf.truncated_normal([self.hidden_two_units], 
-                stddev=1.0 / math.sqrt(float(self.input_size))),name='hidden_two_biases')
-
-        self.hidden_two = tf.nn.relu(tf.matmul(self.hidden_one, self.hidden_two_weights) + self.hidden_two_biases)
+        # self.hidden_two_biases = tf.Variable(tf.truncated_normal([self.hidden_two_units], 
+        #         stddev=0.1),name='hidden_two_biases')
+        # self.hidden_two = tf.nn.relu(tf.matmul(self.hidden_one, self.hidden_two_weights) + self.hidden_two_biases)
 
 
         # OUTPUT LAYER
 
-        self.weights_op = tf.Variable(tf.truncated_normal([self.hidden_two_units, self.num_actions],
-                stddev=1.0 / math.sqrt(float(self.hidden_two_units))), name='weights_op')
+        # self.weights_op = tf.Variable(tf.truncated_normal([self.fc_3, self.num_actions],
+        #         stddev=0.1), name='weights_op')
 
-        self.q_output = tf.nn.relu(tf.matmul(self.hidden_two, self.weights_op))
+        # self.q_output = tf.matmul(self.hidden_two, self.weights_op)
         
         #Then combine them together to get our final Q-values.
         self.predict = tf.argmax(self.q_output,1) # vector of length batch size
@@ -59,7 +56,7 @@ class Qnetwork():
         
         self.td_error = tf.square(self.targetQ - self.Q)
         self.loss = tf.reduce_mean(self.td_error)
-        self.trainer = tf.train.AdamOptimizer(learning_rate=0.001)
+        self.trainer = tf.train.AdamOptimizer(learning_rate=0.0001)
         self.updateModel = self.trainer.minimize(self.loss)
 
 
@@ -96,10 +93,10 @@ def main(ws):
     y = .99 #Discount factor on the target Q-values
     startE = 1 #Starting chance of random action
     endE = 0.1 #Final chance of random action
-    annealing_steps = 10000 #How many steps of training to reduce startE to endE.
+    annealing_steps = 100000 #How many steps of training to reduce startE to endE.
     num_episodes = 10000 #How many episodes of game environment to train network with.
     pre_train_steps = 1500 #How many steps of random actions before training begins.
-    max_epLength = 1500 #The max allowed length of our episode.
+    max_epLength = 750 #The max allowed length of our episode.
     load_model = False #Whether to load a saved model.
     path = "./dqn" #The path to save our model to.
     tau = 0.001 #Rate to update target network toward primary network
@@ -149,8 +146,10 @@ def main(ws):
                 #Choose an action by greedily (with e chance of random action) from the Q-network
                 if np.random.rand(1) < e or total_steps < pre_train_steps:
                     a = np.random.randint(0,4)
+                    print "choosing random action, it is ", a
                 else:
                     a = sess.run(mainQN.predict,feed_dict={mainQN.state:[s]})[0]
+                    print "choosing action from network output, it is ", a
                 s1,r,d = step_simulation(a, ws) # here, send a message through Imran's server to the simulation
                 
                 total_steps += 1
@@ -163,7 +162,7 @@ def main(ws):
                     
                     # print "post reshape"
                     # print (np.reshape(np.array([s,a,r,s1,d]),[1,5]))
-                    print j, rAll
+                    print j, rAll, total_steps
                     if e > endE:
                         e -= stepDrop
                     
@@ -231,7 +230,9 @@ def calc_reward(drone_pos, target_pos):
 
 def unpack_messages(msg):
     arr = msg.split(":")
-    s = arr[:6]
+    s = arr[:2]
+    s.append(arr[4])
+    s.append(arr[5])
     s = [float(i) for i in s]
     collison = int(arr[-1])
     done = False
@@ -239,7 +240,7 @@ def unpack_messages(msg):
     if collison == 1:
         print "collision has occurred"
         done = True
-        reward = 1000
+        reward = 1
     else:
         # d_pos = np.array(s[:2])
         # t_pos = np.array(s[4:])
