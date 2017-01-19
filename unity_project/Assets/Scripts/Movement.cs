@@ -10,6 +10,8 @@ public class Movement : MonoBehaviour {
     public bool netControlled = false;
     private Vector3 newDirection;
     private Vector3 targetPosition;
+    public bool toSend = false;
+    private DataTrack dataTrackScript;
 
     private float groundSize;
 
@@ -21,6 +23,7 @@ public class Movement : MonoBehaviour {
 	void Start () {
         droneRigidbody = gameObject.GetComponent<Rigidbody>();
         GameObject ground = GameObject.Find("Ground");
+        dataTrackScript = GameObject.FindGameObjectWithTag("Controller").GetComponent<DataTrack>();
         groundSize = ground.GetComponent<Collider>().bounds.size.x;
         Respawn();
 	}
@@ -40,6 +43,13 @@ public class Movement : MonoBehaviour {
             direction = Vector3.zero;
             direction = CreateDirectionFromInput();
         }
+        else
+        {
+            if (direction != Vector3.zero)
+            {
+                toSend = true;
+            }
+        }
         if (discrete)
         {
             MoveDiscretely();
@@ -57,6 +67,13 @@ public class Movement : MonoBehaviour {
         {
             transform.position = targetPosition;
         }
+        if (netControlled && toSend)
+        {
+            dataTrackScript.SendData();
+            direction = Vector3.zero;
+            toSend = false;
+        }
+
     }
 
     private Vector3 CreateDirectionFromInput()

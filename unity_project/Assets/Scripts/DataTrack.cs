@@ -4,7 +4,7 @@ using WebSocketSharp;
 
 public class DataTrack : MonoBehaviour {
 
-	WebSocket ws_cur;
+	public WebSocket ws_cur;
     GameObject drone;
     GameObject goal;
     Rigidbody droneRigidbody;
@@ -57,17 +57,7 @@ public class DataTrack : MonoBehaviour {
                 else if (action == 2) { droneMovement.direction = dir2; }
                 else if (action == 3) { droneMovement.direction = dir3; }
 				Debug.Log("Received action, " + e.Data.ToString());
-				if (goal != null) {
-
-					goalCoords = goal.transform.position;
-					droneCoords = drone.transform.position;
-					droneVelocity = droneRigidbody.velocity;
-					ws_cur.Send (buildOutput());
-					if (success == 1)
-					{
-						success = 0;
-					}
-				}
+				
             }
 		};
 		ws_cur.Connect ();
@@ -99,4 +89,20 @@ public class DataTrack : MonoBehaviour {
 	float round_dp(float input){
 		return Mathf.Round (input * 10f) / 10f;
 	}
+
+    public void SendData()
+    {
+        if (goal != null)
+        {
+            Debug.Log("Sending Data");
+            goalCoords = goal.transform.position;
+            droneCoords = drone.transform.position;
+            droneVelocity = droneRigidbody.velocity;
+            ws_cur.Send(buildOutput());
+            if (success == 1)
+            {
+                success = 0;
+            }
+        }
+    }
 }
