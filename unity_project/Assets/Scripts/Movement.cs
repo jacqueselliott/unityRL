@@ -4,27 +4,131 @@ using System.Collections;
 public class Movement : MonoBehaviour {
 
     private Rigidbody droneRigidbody;
-    public float forceMagnitude = 0;
+    public float forceMagnitude;
+    public float discreteMagnitude;
     public Vector3 direction;
     public bool netControlled = false;
     private Vector3 newDirection;
+    private Vector3 targetPosition;
+
+    private float groundSize;
+
+    public bool discrete;
+
+    private bool keyDown;
 
 	// Use this for initialization
 	void Start () {
         droneRigidbody = gameObject.GetComponent<Rigidbody>();
+        GameObject ground = GameObject.Find("Ground");
+        groundSize = ground.GetComponent<Collider>().bounds.size.x;
+        Respawn();
 	}
-	
-	// Update is called once per frame
-	void Update () {
+
+    private void Respawn()
+    {
+        //ensures spawning in grid
+        float offset = 0.5f % discreteMagnitude;
+        transform.position = new Vector3(offset, 0.5f, offset);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
         if (!netControlled)
         {
-            float inx = Input.GetAxis("Horizontal");
-            float inz = Input.GetAxis("Vertical");
-            direction = new Vector3(inx, 0, inz);
+            direction = Vector3.zero;
+            direction = CreateDirectionFromInput();
         }
-        newDirection = direction*forceMagnitude;
-        droneRigidbody.AddForce(newDirection);
+        if (discrete)
+        {
+            MoveDiscretely();
+        }
+        else
+        {
+            ApplyForce();
+        }
         transform.position = new Vector3(transform.position.x, 0.5f, transform.position.z);
+    }
+
+    void LateUpdate()
+    {
+        if (discrete)
+        {
+            transform.position = targetPosition;
+        }
+    }
+
+    private Vector3 CreateDirectionFromInput()
+    {
+        if (discrete)
+        {
+            direction = DiscreteDirection();
+        }
+        else
+        {
+            direction = ContinuousDirection();
+        }
+        return direction;
+    }
+
+    private Vector3 ContinuousDirection()
+    {
+        float inx = Input.GetAxis("Horizontal");
+        float inz = Input.GetAxis("Vertical");
+        direction = new Vector3(inx, 0, inz);
+        return direction;
+    }
+
+    private Vector3 DiscreteDirection()
+    {
+        if (Input.GetKeyDown("w"))
+        {
+            direction = new Vector3(0f, 0f, 1f);
+        }
+        if (Input.GetKeyDown("a"))
+        {
+            direction = new Vector3(-1f, 0f, 0f);
+        }
+        if (Input.GetKeyDown("s"))
+        {
+            direction = new Vector3(0f, 0f, -1f);
+        }
+        if (Input.GetKeyDown("d"))
+        {
+            direction = new Vector3(1f, 0f, 0f);
+        }
+        return direction;
+    }
+
+    private void ApplyForce()
+    {
+        newDirection = direction * forceMagnitude;
+        droneRigidbody.AddForce(newDirection);
+        // fix roll and pitch
         transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
-	}
+    }
+
+    private void MoveDiscretely()
+    {
+        newDirection = direction * discreteMagnitude;
+        bool outside = CheckOutside(transform.position + newDirection);
+        if (!outside)
+        {
+            targetPosition = transform.position + newDirection;
+            transform.position += newDirection;
+        }
+        //fix roll, pitch, yaw
+        transform.eulerAngles = new Vector3(0f, 0f, 0f);
+    }
+
+    private bool CheckOutside(Vector3 newPosition)
+    {
+        float edgeDistance = groundSize / 2;
+        float x = newPosition.x;
+        float z = newPosition.z;
+        if (Mathf.Abs(x) > edgeDistance) { return true; }
+        if (Mathf.Abs(z) > edgeDistance) { return true; }
+        return false;
+    }
 }

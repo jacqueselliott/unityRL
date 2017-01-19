@@ -22,13 +22,12 @@ public class CollisionDetect : MonoBehaviour {
 			dest = false;
 		}
 	}
-    void OnCollisionEnter(Collision other)
+    void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag == "Drone")
         {
-            Destroy(gameObject);
             dataScript.success = 1;
-
+            Destroy(gameObject);
         }
     }
 }
