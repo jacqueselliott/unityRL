@@ -69,7 +69,7 @@ public class DataTrack : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (droneMovement.netControlled && timeSinceSend > 0.2) {
+		if (droneMovement.netControlled && timeSinceSend > 2) {
 			SendData ();
 		}
         if (gameObject.transform.childCount < 1)
