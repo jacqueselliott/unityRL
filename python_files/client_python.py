@@ -19,7 +19,7 @@ def send_message_sync(msg, ws):
 def main(argv):
     ws = create_connection("ws://localhost:9001")
     ws.send('client')
-    ws.settimeout(0.01)
+    ws.settimeout(0.05)
     q_network_simple_sim.main(ws)
 
 if __name__ == "__main__":

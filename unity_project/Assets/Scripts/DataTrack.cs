@@ -3,7 +3,7 @@ using System.Collections;
 using WebSocketSharp;
 
 public class DataTrack : MonoBehaviour {
-
+	
 	public WebSocket ws_cur;
     GameObject drone;
     GameObject goal;
@@ -17,6 +17,8 @@ public class DataTrack : MonoBehaviour {
     private Vector3 dir2;
     private Vector3 dir3;
 
+	private float timeSinceSend;
+
     public int success = 0;
 
     private Movement droneMovement;
@@ -27,6 +29,7 @@ public class DataTrack : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+		timeSinceSend = Time.time;
         dir0 = new Vector3(1f, 0f, 0f); //right
         dir1 = new Vector3(0f, 0f, 1f); //up
         dir2 = new Vector3(0f, 0f, -1f); // down
@@ -43,13 +46,14 @@ public class DataTrack : MonoBehaviour {
                 if (!droneMovement.netControlled)
                 {
                     droneMovement.netControlled = true;
-                }
+            }
                 //Handles received action
                 int action = int.Parse(e.Data.ToString());
                 if (action == -1) {
                     if (goal != null)
                     {
 						colDet.dest = true;
+						droneMovement.toSend = true;
                     }
                 }
                 else if (action == 0) { droneMovement.direction = dir0; }
@@ -57,8 +61,7 @@ public class DataTrack : MonoBehaviour {
                 else if (action == 2) { droneMovement.direction = dir2; }
                 else if (action == 3) { droneMovement.direction = dir3; }
 				Debug.Log("Received action, " + e.Data.ToString());
-				
-            }
+        	}
 		};
 		ws_cur.Connect ();
 		ws_cur.Send ("unity");
@@ -66,6 +69,9 @@ public class DataTrack : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if (droneMovement.netControlled && timeSinceSend > 0.2) {
+			SendData ();
+		}
         if (gameObject.transform.childCount < 1)
         {
             goal = null;
@@ -93,16 +99,18 @@ public class DataTrack : MonoBehaviour {
     public void SendData()
     {
         if (goal != null)
-        {
-            Debug.Log("Sending Data");
+		{
             goalCoords = goal.transform.position;
             droneCoords = drone.transform.position;
             droneVelocity = droneRigidbody.velocity;
             ws_cur.Send(buildOutput());
+			Debug.Log("Sending Data, " + buildOutput());
             if (success == 1)
             {
                 success = 0;
             }
+			droneMovement.toSend = false;
+			timeSinceSend = Time.time;
         }
     }
 }

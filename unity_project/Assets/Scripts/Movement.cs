@@ -69,9 +69,8 @@ public class Movement : MonoBehaviour {
         }
         if (netControlled && toSend)
         {
-            dataTrackScript.SendData();
+			dataTrackScript.SendData ();
             direction = Vector3.zero;
-            toSend = false;
         }
 
     }

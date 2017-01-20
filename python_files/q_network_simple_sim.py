@@ -14,9 +14,9 @@ class Qnetwork():
 
         self.state = tf.placeholder(tf.float32, shape=[None, self.input_size],name="input_state")
 
-        self.fc_1 = tf.contrib.layers.fully_connected(self.state, 10, activation_fn=tf.nn.relu)
-        self.fc_2 = tf.contrib.layers.fully_connected(self.fc_1, 10, activation_fn=tf.nn.relu)
-        self.fc_3 = tf.contrib.layers.fully_connected(self.fc_2, 10, activation_fn=tf.nn.relu)
+        self.fc_1 = tf.contrib.layers.fully_connected(self.state, 100, activation_fn=tf.nn.relu)
+        self.fc_2 = tf.contrib.layers.fully_connected(self.fc_1, 100, activation_fn=tf.nn.relu)
+        self.fc_3 = tf.contrib.layers.fully_connected(self.fc_2, 50, activation_fn=tf.nn.relu)
         self.q_output = tf.contrib.layers.fully_connected(self.fc_3, self.num_actions, activation_fn=None)
         # # HIDDEN LAYER ONE
         # self.hidden_one_units = 10
@@ -93,10 +93,10 @@ def main(ws):
     y = .99 #Discount factor on the target Q-values
     startE = 1 #Starting chance of random action
     endE = 0.1 #Final chance of random action
-    annealing_steps = 100000 #How many steps of training to reduce startE to endE.
+    annealing_steps = 30000 #How many steps of training to reduce startE to endE.
     num_episodes = 10000 #How many episodes of game environment to train network with.
     pre_train_steps = 1500 #How many steps of random actions before training begins.
-    max_epLength = 750 #The max allowed length of our episode.
+    max_epLength = 300 #The max allowed length of our episode.
     load_model = False #Whether to load a saved model.
     path = "./dqn" #The path to save our model to.
     tau = 0.001 #Rate to update target network toward primary network
@@ -218,14 +218,11 @@ def step_simulation(action, ws):
 def calc_reward(drone_pos, target_pos):
     dist = np.linalg.norm(drone_pos-target_pos)
     reward = 0
-    if dist > 8*math.sqrt(2):
-        reward = -5*(dist-8*math.sqrt(2))/8*math.sqrt(2) 
-    if dist < 5*math.sqrt(2):
-        reward = +5 - 5*(3*math.sqrt(2) - dist)/3*math.sqrt(2)
-    if reward > 1:
-        reward =1
-    if reward < -0.5:
-        reward = -0.5
+    reward = (0.5 - 0.5/(3*math.sqrt(2))*dist)
+    if reward > 0.5:
+        reward = 0.5
+    if reward < -1.5:
+        reward = -1.5
     return reward
 
 def unpack_messages(msg):
@@ -240,12 +237,11 @@ def unpack_messages(msg):
     if collison == 1:
         print "collision has occurred"
         done = True
-        reward = 1
+        reward = 5000
     else:
-        # d_pos = np.array(s[:2])
-        # t_pos = np.array(s[4:])
-        # reward = calc_reward(d_pos,t_pos)
-        reward = 0
+        d_pos = np.array(s[:2])
+        t_pos = np.array(s[2:])
+        reward = calc_reward(d_pos,t_pos)
     return s, reward, done
 
 def reset(ws):
