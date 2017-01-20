@@ -1,12 +1,12 @@
 Things to try at the moment
-Train on discrete sim
+Train on discrete sim - DONE
+Train on continous sim - DONE
+Train on discrete with the new reward function - in progress
 Train with larger temporal window
-Try increasing tau?
 
 Future work
-Add  more targets to the game, see what policy it learns
-Use pre-trained net on multi-sphere game/train new net on multisphere game - this can be continuous/discrete
-Use pre-trained net on larger game and see what happens - continuous/discrete
-Get system working end to end - SpatialOS/Unity <-> Imran Server <-> Neural network
+3D discrete - 10x10x10
+Add more targets/obstacles to the game, see what policy it learns
 Implement actor critic and try this on any of the above
-Train on continuous sim with fixed network
+Get system working end to end - SpatialOS/Unity <-> Imran Server <-> Neural network
+Larger 2D game?
