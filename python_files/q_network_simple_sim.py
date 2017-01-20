@@ -78,8 +78,8 @@ class experience_buffer():
 def updateTargetGraph(tfVars,tau):
     total_vars = len(tfVars)
     op_holder = []
-    for idx,var in enumerate(tfVars[0:total_vars/2]):
-        op_holder.append(tfVars[idx+total_vars/2].assign((var.value()*tau) + ((1-tau)*tfVars[idx+total_vars/2].value())))
+    for idx,var in enumerate(tfVars[0:int(total_vars/2)]):
+        op_holder.append(tfVars[idx+int(total_vars/2)].assign((var.value()*tau) + ((1-tau)*tfVars[idx+int(total_vars/2)].value())))
     return op_holder
 
 def updateTarget(op_holder,sess):
@@ -128,7 +128,7 @@ def main(ws):
 
     with tf.Session() as sess:
         if load_model == True:
-            print 'Loading Model...'
+            print('Loading Model...')
             ckpt = tf.train.get_checkpoint_state(path)
             saver.restore(sess,ckpt.model_checkpoint_path)
         sess.run(init)
@@ -146,10 +146,10 @@ def main(ws):
                 #Choose an action by greedily (with e chance of random action) from the Q-network
                 if np.random.rand(1) < e or total_steps < pre_train_steps:
                     a = np.random.randint(0,4)
-                    print "choosing random action, it is ", a
+                    print("choosing random action, it is ", a)
                 else:
                     a = sess.run(mainQN.predict,feed_dict={mainQN.state:[s]})[0]
-                    print "choosing action from network output, it is ", a
+                    print("choosing action from network output, it is ", a)
                 s1,r,d = step_simulation(a, ws) # here, send a message through Imran's server to the simulation
                 
                 total_steps += 1
@@ -162,7 +162,7 @@ def main(ws):
                     
                     # print "post reshape"
                     # print (np.reshape(np.array([s,a,r,s1,d]),[1,5]))
-                    print j, rAll, total_steps
+                    print( j, rAll, total_steps)
                     if e > endE:
                         e -= stepDrop
                     
@@ -204,11 +204,11 @@ def main(ws):
             #Periodically save the model. 
             if i % 1000 == 0:
                 saver.save(sess,path+'/model-'+str(i)+'.cptk')
-                print "Saved Model"
+                print("Saved Model")
             if len(rList) % 10 == 0:
-                print total_steps,np.mean(rList[-10:]), e
+                print(total_steps,np.mean(rList[-10:]), e)
         saver.save(sess,path+'/model-'+str(i)+'.cptk')
-    print "Percent of succesful episodes: " + str(sum(rList)/num_episodes) + "%"
+    print("Percent of succesful episodes: " + str(sum(rList)/num_episodes) + "%")
 
 def step_simulation(action, ws):
     action = str(action)
@@ -235,7 +235,7 @@ def unpack_messages(msg):
     done = False
     reward = -2
     if collison == 1:
-        print "collision has occurred"
+        print("collision has occurred")
         done = True
         reward = 5000
     else:
