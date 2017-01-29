@@ -1,6 +1,2 @@
-model_checkpoint_path: "model-new200.cptk"
-all_model_checkpoint_paths: "model-new100.cptk"
-all_model_checkpoint_paths: "model-new125.cptk"
-all_model_checkpoint_paths: "model-new150.cptk"
-all_model_checkpoint_paths: "model-new175.cptk"
-all_model_checkpoint_paths: "model-new200.cptk"
+model_checkpoint_path: "model-new25.cptk"
+all_model_checkpoint_paths: "model-new25.cptk"

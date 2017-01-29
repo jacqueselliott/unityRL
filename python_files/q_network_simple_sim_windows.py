@@ -135,9 +135,9 @@ def main(ws):
             ckpt = tf.train.get_checkpoint_state(path)
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess,ckpt.model_checkpoint_path)
-                tf.train.write_graph(sess.graph_def, 'dqn_windows/', 'graph.pb', as_text=False)
+                tf.train.write_graph(sess.graph_def, 'dqn_windows/', 'graph2.pb', as_text=False)
                 print("model loaded")
-                e = endE
+                #e = endE
             else:
                 print("no checkpoint found")
         sess.run(init)
@@ -217,7 +217,7 @@ def main(ws):
             #Periodically save the model. 
             if i % 25 == 0 and i > 0:
                 saver.save(sess,path+'/model-'+ str('new')+str(i)+'.cptk')
-                tf.export_meta_graph(filename=path+"/graph-"+str(i)+".meta")
+                tf.train.write_graph(sess.graph_def, 'dqn_windows/', "graph-"+str(i)+".pb", as_text=False)
                 print("Saved Model")
             if len(rList) % 10 == 0:
                 print(total_steps,np.mean(rList[-10:]), e)
