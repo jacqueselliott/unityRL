@@ -60,7 +60,7 @@ public class DataTrack : MonoBehaviour {
                 else if (action == 1) { droneMovement.direction = dir1; }
                 else if (action == 2) { droneMovement.direction = dir2; }
                 else if (action == 3) { droneMovement.direction = dir3; }
-				Debug.Log("Received action, " + e.Data.ToString());
+				//Debug.Log("Received action, " + e.Data.ToString());
         	}
 		};
 		ws_cur.Connect ();
@@ -69,7 +69,7 @@ public class DataTrack : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (droneMovement.netControlled && timeSinceSend > 0.2) {
+		if (droneMovement.netControlled && (Time.time-timeSinceSend) > 0.2) {
 			SendData ();
 		}
         if (gameObject.transform.childCount < 1)
@@ -104,7 +104,7 @@ public class DataTrack : MonoBehaviour {
             droneCoords = drone.transform.position;
             droneVelocity = droneRigidbody.velocity;
             ws_cur.Send(buildOutput());
-			Debug.Log("Sending Data, " + buildOutput());
+			//Debug.Log("Sending Data, " + buildOutput());
             if (success == 1)
             {
                 success = 0;

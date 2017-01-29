@@ -45,7 +45,7 @@ class Qnetwork():
         # self.q_output = tf.matmul(self.hidden_two, self.weights_op)
         
         #Then combine them together to get our final Q-values.
-        self.predict = tf.argmax(self.q_output,1) # vector of length batch size
+        self.predict = tf.argmax(self.q_output,1, name='predict') # vector of length batch size
         
         #Below we obtain the loss by taking the sum of squares difference between the target and prediction Q values.
         self.targetQ = tf.placeholder(shape=[None],dtype=tf.float32)
@@ -97,7 +97,7 @@ def main(ws):
     num_episodes = 10000 #How many episodes of game environment to train network with.
     pre_train_steps = 1500 #How many steps of random actions before training begins.
     max_epLength = 300 #The max allowed length of our episode.
-    load_model = False #Whether to load a saved model.
+    load_model = True #Whether to load a saved model.
     path = "./dqn" #The path to save our model to.
     tau = 0.001 #Rate to update target network toward primary network
     tf.reset_default_graph()
@@ -130,7 +130,8 @@ def main(ws):
         if load_model == True:
             print('Loading Model...')
             ckpt = tf.train.get_checkpoint_state(path)
-            saver.restore(sess,ckpt.model_checkpoint_path)
+            saver.restore(sess,ckpt.model_checkpoint_path)         
+            tf.train.write_graph(sess.graph_def, 'dqn/', 'graph.pb', as_text=False)
         sess.run(init)
         updateTarget(targetOps,sess) #Set the target network to be equal to the primary network.
         for i in range(num_episodes):

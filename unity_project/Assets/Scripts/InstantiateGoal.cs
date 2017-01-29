@@ -42,7 +42,7 @@ public class InstantiateGoal : MonoBehaviour {
                 spawnLocation = ChooseContinuousLocation();
             }
 		}
-        Debug.Log(spawnLocation);
+        //Debug.Log(spawnLocation);
         GameObject goalClone = (GameObject)Instantiate(goal, spawnLocation, Quaternion.identity);
         goalClone.transform.SetParent(gameObject.transform);
     }
